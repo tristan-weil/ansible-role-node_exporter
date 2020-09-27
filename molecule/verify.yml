@@ -1,0 +1,24 @@
+---
+
+- hosts: all
+  name: 'Verify'
+  become: True
+  gather_facts: True
+
+  tasks:
+    - name: 'Check service is enabled/started'
+      service:
+        name: 'node_exporter'
+        enabled: True
+        state: 'started'
+      register: __verify_svc
+      failed_when: __verify_svc.changed
+
+    - name: 'Test URI'
+      uri:
+        url: 'http://127.0.0.1:9100/metrics'
+        return_content: True
+      register: __verify_uri
+      failed_when: >
+        'content' not in __verify_uri
+        or '# HELP go_gc_duration_seconds' not in __verify_uri['content']

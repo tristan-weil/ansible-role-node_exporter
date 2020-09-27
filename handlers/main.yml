@@ -1,0 +1,11 @@
+---
+
+- name: 'node_exporter_restart_handler'
+  service:
+    name: 'node_exporter'
+    state: 'restarted'
+
+- name: 'node_exporter_reload_handler'
+  service:
+    name: 'node_exporter'
+    state: 'reloaded'

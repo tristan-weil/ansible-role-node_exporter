@@ -1,0 +1,17 @@
+---
+
+- name: 'create group'
+  group:
+    name: "{{ _node_exporter_group }}"
+    gid: "{{ _node_exporter_groupid | default(omit) }}"
+    system: True
+
+- name: 'create user'
+  user:
+    name: "{{ _node_exporter_user }}"
+    group: "{{ _node_exporter_group }}"
+    home: '/nonexistent'
+    create_home: False
+    shell: '/bin/false'
+    uid: "{{ _node_exporter_userid | default(omit) }}"
+    system: True

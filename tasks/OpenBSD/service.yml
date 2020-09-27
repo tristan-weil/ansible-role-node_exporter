@@ -1,0 +1,10 @@
+---
+
+- name: 'start node_exporter service'
+  service:
+    name: 'node_exporter'
+    enabled: True
+    state: 'started'
+    arguments: "{{ node_exporter_options | join(' ') }}"
+  notify:
+    - 'node_exporter_restart_handler'

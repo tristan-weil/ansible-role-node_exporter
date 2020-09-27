@@ -1,0 +1,18 @@
+---
+
+- name: 'install systemd service'
+  template:
+    src: 'Debian/lib/systemd/system/node_exporter.service.j2'
+    dest: '/lib/systemd/system/node_exporter.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify:
+    - 'node_exporter_restart_handler'
+
+- name: 'start node_exporter service'
+  systemd:
+    name: 'node_exporter'
+    enabled: True
+    daemon_reload: True
+    state: 'started'

@@ -1,0 +1,17 @@
+---
+
+# common
+node_exporter_options: []
+
+# if not using the system packages system
+node_exporter_artifact_version: 1.0.1
+node_exporter_artifact_sum_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_artifact_version }}/sha256sums.txt"
+node_exporter_artifact_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_artifact_version }}/node_exporter-{{ node_exporter_artifact_version }}.{{ ansible_facts['system'] | lower }}-{{ 'amd64' if ansible_facts['architecture'] == 'x86_64' else ansible_facts['architecture'] }}.tar.gz"
+node_exporter_artifact_sum_algo: sha256
+node_exporter_artifact_version_flag_path: '/etc/node_exporter.version'
+node_exporter_artifact_tmpdir: '/tmp/node_exporter'
+
+node_exporter_force_update: False
+
+node_exporter_daemon_nofiles: 65536
+node_exporter_daemon_nproc: 512

@@ -1,0 +1,88 @@
+---
+
+- include_role:
+    name: 'ansible-role-pkg'
+  vars:
+    pkg_list: "{{ _node_exporter_pkgs }}"
+
+- name: 'delete the version file if requested'
+  file:
+    path: "{{ node_exporter_artifact_version_flag_path }}"
+    state: 'absent'
+  when: node_exporter_force_update
+
+- name: 'check if the version file exists'
+  stat:
+    path: "{{ node_exporter_artifact_version_flag_path }}"
+  register: __node_exporter_version_file_check_result
+
+- name: 'get the current installed version'
+  slurp:
+    src: "{{ node_exporter_artifact_version_flag_path }}"
+  register: __node_exporter_version_version_read_result
+  when: __node_exporter_version_file_check_result.stat.exists
+
+- name: 'activate update'
+  set_fact:
+    __node_exporter_do_update: True
+  when: >
+    (__node_exporter_version_version_read_result.content is not defined)
+    or
+    (__node_exporter_version_version_read_result.content is defined
+      and __node_exporter_version_version_read_result.content | b64decode != node_exporter_artifact_version)
+
+- name: 'unactivate update'
+  set_fact:
+    __node_exporter_do_update: False
+  when: >
+    __node_exporter_version_version_read_result.content is defined
+    and __node_exporter_version_version_read_result.content | b64decode == node_exporter_artifact_version
+
+- block:
+    - include_role:
+        name: 'ansible-role-verify_artifact'
+      vars:
+        verify_artifact_tmpdir: "{{ node_exporter_artifact_tmpdir }}"
+        verify_artifact_sum_url: "{{ node_exporter_artifact_sum_url }}"
+        verify_artifact_download_url: "{{ node_exporter_artifact_url }}"
+        verify_artifact_cksum_algo: "{{ node_exporter_artifact_sum_algo }}"
+      when: __node_exporter_do_update
+
+    - name: 'unarchive archive in the temporary directory'
+      unarchive:
+        src: "{{ node_exporter_artifact_tmpdir }}/{{ node_exporter_artifact_url | basename }}"
+        dest: "{{ node_exporter_artifact_tmpdir }}"
+        owner: 'root'
+        group: 'root'
+        mode: '0700'
+        remote_src: True
+
+    - name: 'install the binaries'
+      copy:
+        src: "{{ node_exporter_artifact_tmpdir }}/{{ node_exporter_artifact_url | basename | regex_replace('\\.tar.gz', '') }}/{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+        remote_src: True
+      loop:
+        - src: 'node_exporter'
+          dest: '/usr/sbin/node_exporter'
+      notify:
+        - 'node_exporter_restart_handler'
+
+    - name: 'write the version file'
+      copy:
+        content: "{{ node_exporter_artifact_version }}"
+        dest: "{{ node_exporter_artifact_version_flag_path }}"
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+
+  always:
+    - name: 'delete tmpdir'
+      file:
+        path: "{{ node_exporter_artifact_tmpdir }}"
+        state: 'absent'
+
+  when: __node_exporter_do_update

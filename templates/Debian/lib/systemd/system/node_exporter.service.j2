@@ -1,0 +1,36 @@
+[Unit]
+Description=Node Exporter {{ node_exporter_artifact_version }}
+
+[Service]
+; User and group the process will run as
+User={{ _node_exporter_user }}
+Group={{ _node_exporter_group }}
+
+; Start/Restart
+ExecStart=/usr/sbin/node_exporter {{ node_exporter_options | join(' ') }}
+
+; Umask
+UMask=0077
+
+; Kill mode
+KillMode=control-group
+
+; Restart on crash
+Restart=on-failure
+
+; Limits
+LimitNOFILE={{ node_exporter_daemon_nofiles }}
+LimitNPROC={{ node_exporter_daemon_nproc }}
+
+; Use private /tmp and /var/tmp, which are discarded after it stops
+PrivateTmp=true
+; Cannot change privileges
+NoNewPrivileges=true
+; Deny the creation of writable and executable memory mappings.
+MemoryDenyWriteExecute=true
+
+; Syslog configuration
+SyslogIdentifier=node_exporter
+
+[Install]
+WantedBy=multi-user.target
