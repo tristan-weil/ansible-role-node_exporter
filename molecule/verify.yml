@@ -13,6 +13,7 @@
         state: 'started'
       register: __verify_svc
       failed_when: __verify_svc.changed
+      when: ansible_facts['os_family'] != 'OpenBSD'  # we can't determine 'arguments' during verify so it'll be always false
 
     - name: 'Test URI'
       uri:
