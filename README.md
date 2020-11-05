@@ -56,4 +56,4 @@ See [meta/main.yml](https://github.com/tristan-weil/ansible-role-node_exporter/b
 
 ## License
 
-See [LICENSE.md](https://github.com/tristan-weil/ansible-role-node_exporter/blob/master/LICENSE.md)
+See [LICENSE.md](LICENSE.md)
